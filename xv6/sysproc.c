@@ -8,9 +8,18 @@
 #include "proc.h"
 
 int
-sys_fork(void)
+sys_fork()
 {
   return fork();
+}
+
+int
+sys_clone(void)
+{
+  int Func, arg1, arg2, stack;
+  if(argint(0, &Func)<0 || argint(1, &arg1)<0 || argint(2, &arg2)<0 || argint(3, &stack)<0)
+    return -1;
+  return clone((void *)Func, (void *)arg1, (void *)arg2, (void *)stack);
 }
 
 int

@@ -98,3 +98,12 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+int
+sys_join(void)
+{
+  int tid;
+  if(argint(0, &tid) < 0)
+    return -1;
+  return join(tid);
+}

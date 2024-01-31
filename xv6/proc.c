@@ -329,6 +329,47 @@ exit(void)
 
 // Wait for a child process to exit and return its pid.
 // Return -1 if this process has no children.
+
+int
+join(int Pid)
+{
+  struct proc *p;
+  int havekids;
+  struct proc *cp = myproc();
+
+  acquire(&ptable.lock);
+  for(;;){
+    // Scan through table looking for exited children.
+    havekids = 0;
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+      if(p->parent != cp || p->pgdir != p->parent->pgdir)
+        continue;
+      havekids = 1;
+      if(p->state == ZOMBIE && p-> pid == Pid){
+
+        kfree(p->kstack);
+        p->kstack = 0;
+
+        p->pid = 0;
+        p->parent = 0;
+        p->name[0] = 0;
+        p->killed = 0;
+        p->state = UNUSED;
+        p->stack = 0;
+
+        release(&ptable.lock);
+        return 1;
+      }
+    }
+
+    if(!havekids || cp->killed){
+      release(&ptable.lock);
+      return -1;
+    }
+    sleep(cp, &ptable.lock);  
+  }
+}
+
 int
 wait(void)
 {
@@ -592,3 +633,4 @@ procdump(void)
     cprintf("\n");
   }
 }
+

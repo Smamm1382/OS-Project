@@ -113,3 +113,23 @@ int thread_create(void (*start_routine)(void *, void *), void* arg1, void* arg2)
 
   return clone(start_routine, arg1, arg2, stack);
 }
+
+int 
+lock_init(lock *lk)
+{
+  lk->is_locked = 0;
+  return 0;
+}
+
+void 
+lock_acquire(lock *lk)
+{
+  while(xchg(&lk->is_locked, 1) != 0)
+    ;
+}
+
+void 
+lock_release(lock *lk)
+{
+	xchg(&lk->is_locked, 0);
+}
